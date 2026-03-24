@@ -24,7 +24,7 @@ public class MovieDetailsHandler extends BaseHttpHandler {
             return;
         }
 
-        String idString = requestPath.substring((MOVIES_PATH +"/").length());
+        String idString = requestPath.substring((MOVIES_PATH + "/").length());
         int movieId;
         try {
             movieId = Integer.parseInt(idString);
