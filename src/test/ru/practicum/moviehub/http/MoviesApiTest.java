@@ -230,7 +230,7 @@ public class MoviesApiTest {
 
     @Test
     void getMovieById_whenNotFound_returns404() throws Exception {
-        HttpResponse<String> resp = sendGet(MOVIES_PATH +"/999");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "/999");
         assertEquals(404, resp.statusCode());
     }
 
@@ -244,7 +244,7 @@ public class MoviesApiTest {
     @Test
     void deleteMovieById_whenExists_returns204() throws Exception {
         Movie movie = store.add(new Movie("Бойцовский клуб", 1999));
-        HttpResponse<String> resp = sendDelete(MOVIES_PATH +"/" + movie.getId());
+        HttpResponse<String> resp = sendDelete(MOVIES_PATH + "/" + movie.getId());
         assertEquals(204, resp.statusCode());
         assertTrue(store.getById(movie.getId()).isEmpty());
     }
@@ -278,7 +278,7 @@ public class MoviesApiTest {
     @Test
     void getMovies_withYearFilterNoMatches_returnsEmptyArray() throws Exception {
         store.add(new Movie("Фильм", 2020));
-        HttpResponse<String> resp = sendGet(MOVIES_PATH +"?year=1999");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "?year=1999");
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
         List<Movie> movies = gson.fromJson(resp.body(), new ListOfMoviesTypeToken().getType());
@@ -287,7 +287,7 @@ public class MoviesApiTest {
 
     @Test
     void getMovies_withInvalidYear_returns400() throws Exception {
-        HttpResponse<String> resp = sendGet(MOVIES_PATH +"?year=abc");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "?year=abc");
         assertEquals(400, resp.statusCode());
     }
 
