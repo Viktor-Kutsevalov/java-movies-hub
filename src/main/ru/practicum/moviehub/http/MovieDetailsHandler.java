@@ -18,13 +18,13 @@ public class MovieDetailsHandler extends BaseHttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String requestPath = exchange.getRequestURI().getPath();
 
-        if (!requestPath.startsWith("/movies/")) {
+        if (!requestPath.startsWith(MOVIES_PATH + "/")) {
             exchange.sendResponseHeaders(404, -1);
             exchange.getResponseBody().close();
             return;
         }
 
-        String idString = requestPath.substring("/movies/".length());
+        String idString = requestPath.substring((MOVIES_PATH +"/").length());
         int movieId;
         try {
             movieId = Integer.parseInt(idString);

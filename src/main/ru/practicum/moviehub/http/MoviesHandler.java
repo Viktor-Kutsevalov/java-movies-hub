@@ -25,7 +25,7 @@ public class MoviesHandler extends BaseHttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         String requestPath = exchange.getRequestURI().getPath();
 
-        if (!requestPath.equals("/movies")) {
+        if (!requestPath.equals(MOVIES_PATH)) {
             exchange.sendResponseHeaders(404, -1);
             exchange.getResponseBody().close();
             return;

@@ -26,6 +26,7 @@ public class MoviesApiTest {
     private static final String BASE_URL = "http://localhost:8080";
     private static final String CT_JSON = "application/json; charset=UTF-8";
     private static final Charset UTF8 = StandardCharsets.UTF_8;
+    private static final String MOVIES_PATH = "/movies";
     private static MoviesServer server;
     private static HttpClient client;
     private static Gson gson;
@@ -102,7 +103,7 @@ public class MoviesApiTest {
     // GET /movies
     @Test
     void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
-        HttpResponse<String> resp = sendGet("/movies");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH);
 
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
@@ -116,7 +117,7 @@ public class MoviesApiTest {
         store.add(new Movie("Начало", 2010));
         store.add(new Movie("Матрица", 1999));
 
-        HttpResponse<String> resp = sendGet("/movies");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH);
 
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
@@ -129,7 +130,7 @@ public class MoviesApiTest {
     @Test
     void postMovie_whenValid_returnsCreated() throws Exception {
         Movie newMovie = new Movie("Тёмный рыцарь", 2008);
-        HttpResponse<String> resp = sendPost("/movies", newMovie);
+        HttpResponse<String> resp = sendPost(MOVIES_PATH, newMovie);
 
         assertEquals(201, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
@@ -143,7 +144,7 @@ public class MoviesApiTest {
     @Test
     void postMovie_whenEmptyTitle_returns422() throws Exception {
         Movie invalid = new Movie("", 2020);
-        HttpResponse<String> resp = sendPost("/movies", invalid);
+        HttpResponse<String> resp = sendPost(MOVIES_PATH, invalid);
 
         assertEquals(422, resp.statusCode());
 
@@ -156,7 +157,7 @@ public class MoviesApiTest {
     void postMovie_whenTitleTooLong_returns422() throws Exception {
         String longTitle = "а".repeat(101);
         Movie invalid = new Movie(longTitle, 2020);
-        HttpResponse<String> resp = sendPost("/movies", invalid);
+        HttpResponse<String> resp = sendPost(MOVIES_PATH, invalid);
 
         assertEquals(422, resp.statusCode());
 
@@ -168,7 +169,7 @@ public class MoviesApiTest {
     @Test
     void postMovie_whenYearTooLow_returns422() throws Exception {
         Movie invalid = new Movie("Старый фильм", 1887);
-        HttpResponse<String> resp = sendPost("/movies", invalid);
+        HttpResponse<String> resp = sendPost(MOVIES_PATH, invalid);
 
         assertEquals(422, resp.statusCode());
 
@@ -182,7 +183,7 @@ public class MoviesApiTest {
     void postMovie_whenYearTooHigh_returns422() throws Exception {
         int currentYear = Year.now().getValue();
         Movie invalid = new Movie("Фильм будущего", currentYear + 2);
-        HttpResponse<String> resp = sendPost("/movies", invalid);
+        HttpResponse<String> resp = sendPost(MOVIES_PATH, invalid);
 
         assertEquals(422, resp.statusCode());
 
@@ -197,7 +198,7 @@ public class MoviesApiTest {
         String jsonBody = gson.toJson(newMovie);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/movies"))
+                .uri(URI.create(BASE_URL + MOVIES_PATH))
                 .header("Content-Type", "text/plain")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody, UTF8))
                 .build();
@@ -210,7 +211,7 @@ public class MoviesApiTest {
 
     @Test
     void postMovie_whenInvalidJson_returns400() throws Exception {
-        HttpResponse<String> resp = sendPostRaw("/movies", "not a json");
+        HttpResponse<String> resp = sendPostRaw(MOVIES_PATH, "not a json");
         assertEquals(400, resp.statusCode());
     }
 
@@ -218,7 +219,7 @@ public class MoviesApiTest {
     @Test
     void getMovieById_whenExists_returnsMovie() throws Exception {
         Movie movie = store.add(new Movie("Интерстеллар", 2014));
-        HttpResponse<String> resp = sendGet("/movies/" + movie.getId());
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "/" + movie.getId());
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
         Movie found = gson.fromJson(resp.body(), Movie.class);
@@ -229,13 +230,13 @@ public class MoviesApiTest {
 
     @Test
     void getMovieById_whenNotFound_returns404() throws Exception {
-        HttpResponse<String> resp = sendGet("/movies/999");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH +"/999");
         assertEquals(404, resp.statusCode());
     }
 
     @Test
     void getMovieById_whenInvalidId_returns400() throws Exception {
-        HttpResponse<String> resp = sendGet("/movies/abc");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "/abc");
         assertEquals(400, resp.statusCode());
     }
 
@@ -243,20 +244,20 @@ public class MoviesApiTest {
     @Test
     void deleteMovieById_whenExists_returns204() throws Exception {
         Movie movie = store.add(new Movie("Бойцовский клуб", 1999));
-        HttpResponse<String> resp = sendDelete("/movies/" + movie.getId());
+        HttpResponse<String> resp = sendDelete(MOVIES_PATH +"/" + movie.getId());
         assertEquals(204, resp.statusCode());
         assertTrue(store.getById(movie.getId()).isEmpty());
     }
 
     @Test
     void deleteMovieById_whenNotFound_returns404() throws Exception {
-        HttpResponse<String> resp = sendDelete("/movies/999");
+        HttpResponse<String> resp = sendDelete(MOVIES_PATH + "/999");
         assertEquals(404, resp.statusCode());
     }
 
     @Test
     void deleteMovieById_whenInvalidId_returns400() throws Exception {
-        HttpResponse<String> resp = sendDelete("/movies/abc");
+        HttpResponse<String> resp = sendDelete(MOVIES_PATH + "/abc");
         assertEquals(400, resp.statusCode());
     }
 
@@ -266,7 +267,7 @@ public class MoviesApiTest {
         store.add(new Movie("Фильм 2000 А", 2000));
         store.add(new Movie("Фильм 2001", 2001));
         store.add(new Movie("Фильм 2000 Б", 2000));
-        HttpResponse<String> resp = sendGet("/movies?year=2000");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH + "?year=2000");
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
         List<Movie> movies = gson.fromJson(resp.body(), new ListOfMoviesTypeToken().getType());
@@ -277,7 +278,7 @@ public class MoviesApiTest {
     @Test
     void getMovies_withYearFilterNoMatches_returnsEmptyArray() throws Exception {
         store.add(new Movie("Фильм", 2020));
-        HttpResponse<String> resp = sendGet("/movies?year=1999");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH +"?year=1999");
         assertEquals(200, resp.statusCode());
         assertEquals(CT_JSON, resp.headers().firstValue("Content-Type").orElse(""));
         List<Movie> movies = gson.fromJson(resp.body(), new ListOfMoviesTypeToken().getType());
@@ -286,14 +287,14 @@ public class MoviesApiTest {
 
     @Test
     void getMovies_withInvalidYear_returns400() throws Exception {
-        HttpResponse<String> resp = sendGet("/movies?year=abc");
+        HttpResponse<String> resp = sendGet(MOVIES_PATH +"?year=abc");
         assertEquals(400, resp.statusCode());
     }
 
     // Общие
     @Test
     void unsupportedMethod_returns405() throws Exception {
-        HttpResponse<String> resp = sendPut("/movies");
+        HttpResponse<String> resp = sendPut(MOVIES_PATH);
         assertEquals(405, resp.statusCode());
     }
 }
